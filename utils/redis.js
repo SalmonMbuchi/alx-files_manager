@@ -11,16 +11,16 @@ class RedisClient {
   }
 
   isAlive() {
-    return this.client.connected; 
+    return this.client.connected;
   }
 
   async get(key) {
-    const value = await this.getAsync(key); 
+    const value = await this.getAsync(key);
     return value;
   }
-  
+
   async set(key, value, time) {
-    this.client.setex(key, time, value); 
+    this.client.setex(key, time, value);
   }
 
   async del(key) {
