@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import dbClient from '../utils/db';
 
 class UsersController {
@@ -14,12 +14,11 @@ class UsersController {
     const users = dbClient.db.collection('users');
     const user = await users.findOne({ email });
     if (user) {
-      res.status(400).json({ error: 'Already exist' });
+      res.status(400).send({ error: 'Already exist' });
     }
 
     // hash the password using SHA1
-    const saltRounds = 10;
-    const hash = bcrypt.hashSync(password, saltRounds);
+    const hash = crypto.createHash('sha1').update(password).digest('hex');
     const obj = {
       email,
       password: hash,
