@@ -19,7 +19,7 @@ class DBClient {
 
   isAlive() {
     // returns true if connection to MongoDB is a success
-    return this.db;
+    return !!this.db;
   }
 
   async nbUsers() {
