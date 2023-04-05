@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
+import mime from 'mime-types';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
@@ -123,6 +124,29 @@ class FilesController {
     if (!file) res.status(404).send({ error: 'Not found' });
     file.isPublic = false;
     res.status(200).send(file);
+  }
+
+  // File data
+  static async getFile(req, res) {
+    const user = await FilesController.getUserByToken(req);
+    const files = dbClient.db.collection('files');
+    const id = req.params;
+    const file = await files.findOne({ _id: ObjectId(id) });
+    if (!file) res.status(404).send({ error: 'Not found' });
+    if (!user && file.isPublic === false) {
+      res.status(400).send({ error: 'Not found' });
+    }
+    if (user && file.isPublic === false && file.userId !== user._id) {
+      res.status(400).send({ error: 'Not found' });
+    }
+    if (file.type === 'folder') res.status(400).send({ error: 'A folder doesn\'t have content' });
+    if (file.localPath === undefined) {
+      res.status(404).send({ error: 'Not found' });
+    } else {
+      const contentType = mime.lookup(file.name);
+      res.set('Content-Type', contentType);
+      res.status(200).send(file);
+    }
   }
 
   static async getUserByToken(req) {
