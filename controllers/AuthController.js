@@ -1,4 +1,5 @@
-import { createHash, randomUUID } from 'crypto';
+import { createHash } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
@@ -18,9 +19,8 @@ class AuthController {
     const user = await users.findOne({ email, password: hash });
     if (!user) res.status(401).send({ error: 'Unauthorized' });
     // generate uuidv4 string
-    const token = randomUUID();
+    const token = uuidv4();
     const key = `auth_${token}`;
-    console.log(user);
     await redisClient.set(key, user._id, 86400);
     // res.set('X-Token', token);
     res.status(200).send({ token });
