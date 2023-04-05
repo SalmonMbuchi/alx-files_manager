@@ -9,8 +9,9 @@ class FilesController {
     const token = req.get('X-Token');
     const key = `auth_${token}`;
     const userId = await redisClient.get(key);
-    if (!userId) res.status(401).send({ error: 'Unauthorized' });
-
+    const users = dbClient.db.collection('users');
+    const user = await users.findOne({ _id: ObjectId(userId) });
+    if (!user) res.status(401).send({ error: 'Unauthorized' });
     // data
     const {
       name,
@@ -60,6 +61,58 @@ class FilesController {
       await files.insertOne(newFile);
       res.status(201).send(newFile);
     }
+  }
+
+  static async getShow(req, res) {
+    const token = req.get('X-Token');
+    const key = `auth_${token}`;
+    const userId = await redisClient.get(key);
+    const users = dbClient.db.collection('users');
+    const user = await users.findOne({ _id: ObjectId(userId) });
+    if (!user) res.status(401).send({ error: 'Unauthorized' });
+    // Search for file linked to the user and ID
+    const files = dbClient.db.collection('files');
+    const id = req.params;
+    const file = await files.findOne({ _id: ObjectId(id), userId: user._id });
+    if (!file) res.status(404).send({ error: 'Not found' });
+    res.status(200).send(file);
+  }
+
+  static async getIndex(req, res) {
+    const token = req.get('X-Token');
+    const key = `auth_${token}`;
+    const userId = await redisClient.get(key);
+    const users = dbClient.db.collection('users');
+    const user = await users.findOne({ _id: ObjectId(userId) });
+    if (!user) res.status(401).send({ error: 'Unauthorized' });
+    // List a file(s) based on parentId and page
+    const { parentId, page } = req.query;
+    // Find file based on parentId and paginate
+    const files = dbClient.db.collection('files');
+    const pageSize = 20;
+    const pageNumber = page || 1;
+    let query;
+    if (!parentId) {
+      query = { userId: user._id.toString() };
+    } else {
+      query = { userId: user._id.toString() };
+    }
+    const pipeline = [
+      { $match: query },
+      { $skip: (pageNumber - 1) * pageSize },
+      { $limit: pageSize },
+    ];
+    const results = await files.aggregate(pipeline).toArray();
+    const result = results.map((file) => {
+      const newFile = {
+        ...file,
+        id: file._id,
+      };
+      delete newFile._id;
+      delete newFile.localPath;
+      return newFile;
+    });
+    res.status(200).send(result);
   }
 }
 
