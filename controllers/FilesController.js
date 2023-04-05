@@ -35,7 +35,6 @@ class FilesController {
       type,
       isPublic: isPublic || false,
       parentId: parentId || 0,
-      data,
     };
     if (type === 'folder') {
       const files = dbClient.db.collection('files');
@@ -57,6 +56,7 @@ class FilesController {
       });
       const files = dbClient.db.collection('files');
       newFile.localPath = localPath;
+      newFile.data = data;
       await files.insertOne(newFile);
       res.status(201).send(newFile);
     }
