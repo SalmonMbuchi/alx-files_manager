@@ -140,13 +140,12 @@ class FilesController {
       res.status(400).send({ error: 'Not found' });
     }
     if (file.type === 'folder') res.status(400).send({ error: 'A folder doesn\'t have content' });
-    if (file.localPath === undefined) {
-      res.status(404).send({ error: 'Not found' });
-    } else {
+    fs.access(file.localPath, fs.constants.F_OK, (err) => {
+      if (err) res.status(404).send({ error: 'Not found' });
       const contentType = mime.lookup(file.name);
       res.set('Content-Type', contentType);
       res.status(200).send(file);
-    }
+    });
   }
 
   static async getUserByToken(req) {
