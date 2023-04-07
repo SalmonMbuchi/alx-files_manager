@@ -109,10 +109,13 @@ class FilesController {
     if (!user) res.status(401).send({ error: 'Unauthorized' });
     const files = dbClient.db.collection('files');
     const id = req.params;
-    const file = await files.findOne({ _id: ObjectId(id), userId: user._id });
-    if (!file) res.status(404).send({ error: 'Not found' });
-    file.isPublic = true;
-    res.status(200).send(file);
+    const filter = { _id: ObjectId(id), userId: user._id };
+    const update = { $set: { isPublic: true } };
+    const options = { returnOriginal: false };
+    files.findOneAndUpdate(filter, update, options, (err, file) => {
+      if (err) res.status(404).send({ error: 'Not found' });
+      res.status(200).send(file.value);
+    });
   }
 
   static async putUnpublish(req, res) {
@@ -120,10 +123,13 @@ class FilesController {
     if (!user) res.status(401).send({ error: 'Unauthorized' });
     const files = dbClient.db.collection('files');
     const id = req.params;
-    const file = await files.findOne({ _id: ObjectId(id), userId: user._id });
-    if (!file) res.status(404).send({ error: 'Not found' });
-    file.isPublic = false;
-    res.status(200).send(file);
+    const filter = { _id: ObjectId(id), userId: user._id };
+    const update = { $set: { isPublic: false } };
+    const options = { returnOriginal: false };
+    files.findOneAndUpdate(filter, update, options, (err, file) => {
+      if (err) res.status(404).send({ error: 'Not found' });
+      res.status(200).send(file.value);
+    });
   }
 
   // File data
