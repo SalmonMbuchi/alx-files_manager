@@ -9,7 +9,7 @@ class AuthController {
     // Decode the base64 string
     encoded = encoded.split('Basic ');
     const buff = Buffer.from(encoded[1], 'base64');
-    const decoded = buff.toString('utf-8');
+    const decoded = buff.toString('ascii');
     // split the string
     const emailPassword = decoded.split(':');
     // Check if user exists
