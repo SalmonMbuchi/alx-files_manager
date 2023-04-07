@@ -23,7 +23,7 @@ class FilesController {
     if (!data && type !== 'folder') res.status(400).send({ error: 'Missing data' });
     if (parentId) {
       const files = dbClient.db.collection('files');
-      const file = await files.findOne({ _id: ObjectId(parentId) });
+      const file = await files.findOne({ _id: ObjectId(parentId), userId: user._id });
       if (!file) res.status(400).send({ error: 'Parent not found' });
       if (file.type !== 'folder') res.status(400).send({ error: 'Parent is not a folder' });
     }
@@ -82,9 +82,9 @@ class FilesController {
     const pageNumber = page || 1;
     let query;
     if (!parentId) {
-      query = { userId: user._id.toString() };
+      query = { userId: user._id };
     } else {
-      query = { userId: user._id.toString() };
+      query = { userId: user._id, parentId: ObjectId(parentId) };
     }
     const pipeline = [
       { $match: query },

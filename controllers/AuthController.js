@@ -9,11 +9,7 @@ class AuthController {
     // Decode the base64 string
     encoded = encoded.split('Basic ');
     const buff = Buffer.from(encoded[1], 'base64');
-    // check for invalid Base64 content
-    if (buff.toString('base64') !== encoded[1]) {
-      res.status(401).send({ error: 'Unauthorized' });
-    }
-    const decoded = buff.toString('ascii');
+    const decoded = buff.toString('utf-8');
     // split the string
     const emailPassword = decoded.split(':');
     // Check if user exists
